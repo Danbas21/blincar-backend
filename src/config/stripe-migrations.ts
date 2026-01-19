@@ -4,6 +4,13 @@ export const createStripeTables = async () => {
   try {
     console.log('🔄 Creando tablas y columnas para Stripe...');
 
+    // Agregar columna firebase_uid a la tabla users (para autenticacion Firebase)
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS firebase_uid VARCHAR(255) UNIQUE
+    `);
+    console.log('✅ Columna firebase_uid agregada a users');
+
     // Agregar columna stripe_customer_id a la tabla users
     await pool.query(`
       ALTER TABLE users
