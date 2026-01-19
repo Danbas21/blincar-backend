@@ -4,14 +4,29 @@ import * as admin from 'firebase-admin';
 import { pool } from '../config/database';
 
 // Inicializar Firebase Admin si no esta inicializado
+// Usa GOOGLE_APPLICATION_CREDENTIALS para cargar el archivo JSON de credenciales
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    }),
-  });
+  try {
+    // Si existe el archivo de credenciales, usarlo
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+      });
+      console.log('Firebase Admin inicializado con archivo de credenciales');
+    } else {
+      // Fallback a variables de entorno individuales
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        }),
+      });
+      console.log('Firebase Admin inicializado con variables de entorno');
+    }
+  } catch (error) {
+    console.error('Error inicializando Firebase Admin:', error);
+  }
 }
 
 // Extender la interfaz Request para incluir user
