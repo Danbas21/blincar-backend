@@ -49,7 +49,13 @@ export const authenticateToken = async (
 
     // Primero intentar verificar como Firebase ID Token
     try {
+      console.log('Verificando token Firebase...');
+      console.log('Firebase Project ID:', process.env.FIREBASE_PROJECT_ID);
+      console.log('Firebase Client Email:', process.env.FIREBASE_CLIENT_EMAIL);
+      console.log('Token length:', token.length);
+
       const decodedFirebase = await admin.auth().verifyIdToken(token);
+      console.log('Firebase token verificado! UID:', decodedFirebase.uid);
 
       // Buscar o crear usuario en la base de datos por firebase_uid
       let userResult = await pool.query(
@@ -75,6 +81,7 @@ export const authenticateToken = async (
 
       // Si aun no existe, crear usuario
       if (userResult.rows.length === 0) {
+        console.log('Creando nuevo usuario:', decodedFirebase.email);
         const insertResult = await pool.query(
           `INSERT INTO users (email, firebase_uid, role, status, created_at)
            VALUES ($1, $2, 'passenger', 'active', NOW())
@@ -98,9 +105,10 @@ export const authenticateToken = async (
       req.user = user;
       return next();
 
-    } catch (firebaseError) {
-      // Si falla Firebase, intentar con JWT regular
-      console.log('Firebase token failed, trying JWT...');
+    } catch (firebaseError: any) {
+      // Si falla Firebase, mostrar error detallado e intentar con JWT regular
+      console.error('Firebase token verification failed:', firebaseError.message);
+      console.error('Firebase error code:', firebaseError.code);
     }
 
     // Intentar verificar como JWT regular

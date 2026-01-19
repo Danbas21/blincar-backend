@@ -7,6 +7,18 @@ const router = Router();
 // Configuracion publica (para obtener publishable key)
 router.get('/config', StripeController.getConfig);
 
+// Debug endpoint para verificar configuracion de Firebase (TEMPORAL - remover en produccion)
+router.get('/debug-firebase', (req, res) => {
+  const firebaseConfig = {
+    projectId: process.env.FIREBASE_PROJECT_ID || 'NOT SET',
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || 'NOT SET',
+    privateKeySet: !!process.env.FIREBASE_PRIVATE_KEY,
+    privateKeyLength: process.env.FIREBASE_PRIVATE_KEY?.length || 0,
+    privateKeyStartsWith: process.env.FIREBASE_PRIVATE_KEY?.substring(0, 50) || 'NOT SET',
+  };
+  res.json({ success: true, data: firebaseConfig });
+});
+
 // Rutas protegidas para pasajeros
 router.post('/customer', authenticateToken, requireRole(['passenger']), StripeController.createOrGetCustomer);
 router.post('/setup-intent', authenticateToken, requireRole(['passenger']), StripeController.createSetupIntent);
