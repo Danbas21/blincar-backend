@@ -181,8 +181,8 @@ export class RouteController {
       url.searchParams.set('language', 'es');
       url.searchParams.set('components', 'country:mx');
       url.searchParams.set('location', '19.4326,-99.1332');
-      url.searchParams.set('radius', '500000');
-      url.searchParams.set('types', 'geocode|establishment');
+      url.searchParams.set('radius', '50000');
+      url.searchParams.set('strictbounds', 'false');
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
